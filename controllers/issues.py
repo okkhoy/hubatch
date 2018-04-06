@@ -98,6 +98,8 @@ class IssueController(BaseController):
             except IndexError:
                 actl_to_repo = torepo.format('')
 
+            new_body = new_body + '\n\n Issue created by: @' + to_mapping[1]
+
             is_transferred = self.ghc.create_issue(new_title, new_body, None, to_mapping, actl_to_repo)
 
             if not is_transferred:
