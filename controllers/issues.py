@@ -4,7 +4,7 @@ Issue-related tasks
 from .common import BaseController
 import parsers
 
-import logging, re, time
+import argparse, logging, re, time, sys
 
 class IssueController(BaseController):
     def __init__(self, ghc):
@@ -32,11 +32,19 @@ class IssueController(BaseController):
         parser.set_defaults(func=self.blast_command)
 
     def setup_copy_args(self, subparsers):
-        parser = subparsers.add_parser('copy', help='copies issues from one repository to another')
+        help_text = 'copies issues from one repository to another'
+        example_text = '''example:
+  python main.py octocat/source octocat/destination
+  python main.py -m mymapping.csv octocat/source octocat/destination
+  python main.py -m mymapping.csv octocat/source octo{}/destination'''
+        parser = subparsers.add_parser('copy',
+                                 help=help_text,
+                                 epilog=example_text,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument('fromrepo', metavar='from', type=str,
-                            help='repository from which we should copy')
+                            help='repository to copy from, in {owner}/{name} format')
         parser.add_argument('torepo', metavar='to', type=str,
-                            help='repository to which we should copy to')
+                            help='repository to copy from, in {owner}/{name} format. If a replacement field ({}) is specified, it will be replaced with the first tag in the mapping.')
         parser.add_argument('-m', '--mapping', metavar='csv', type=str,
                             help='filename of CSV containing the title tag mapping')
         parser.add_argument('-s', '--start-from', metavar='index', type=int,
@@ -55,7 +63,7 @@ class IssueController(BaseController):
     def copy_command(self, args):
         logging.debug('Copying from %s to %s', args.fromrepo, args.torepo)
 
-        if parsers.common.are_files_readable(args.mapping):
+        if args.mapping is None or parsers.common.are_files_readable(args.mapping):
             self.copy_issues(args.mapping, args.fromrepo, args.torepo, args.start_from)
         else:
             sys.exit(1)
@@ -65,8 +73,12 @@ class IssueController(BaseController):
         Copies issues from one repository to another
         '''
         first_repo_issues = self.ghc.get_issues_from_repository(fromrepo)
-        mapping_dict = parsers.csvparser.get_rows_as_dict(mapping_file)
+        mapping_dict = parsers.csvparser.get_rows_as_dict(mapping_file) if mapping_file is not None else {}
         REF_TEMPLATE = '\n\n<sub>[original: {}#{}]</sub>'
+
+        if torepo.count('{}') > 1:
+            logging.error('torepo contains more than 1 replacement field!')
+            sys.exit(1)
 
         if not offset:
             offset = 0
@@ -79,13 +91,17 @@ class IssueController(BaseController):
 
             if from_mapping:
                 from_mapping = from_mapping.group(1)
-                print(from_mapping)
-                to_mapping = mapping_dict.get(from_mapping, from_mapping)
+                to_mapping = mapping_dict.get(from_mapping, [])
 
-            is_transferred = self.ghc.create_issue(new_title, new_body, None, to_mapping, torepo)
+            try:
+                actl_to_repo = torepo.format(to_mapping[0])
+            except IndexError:
+                actl_to_repo = torepo.format('')
+
+            is_transferred = self.ghc.create_issue(new_title, new_body, None, to_mapping, actl_to_repo)
 
             if not is_transferred:
-                logging.error('Unable to create issue with idx: %s', user)
+                logging.error('[%d][#%d][%s -> %s] Unable to copy', idx, issue.number, fromrepo, actl_to_repo)
 
     def blast_issues(self, csv_file, title, msg_file, start_from):
         """
