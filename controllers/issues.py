@@ -7,7 +7,7 @@ import parsers
 import argparse, logging, re, time, sys
 import csv
 
-class IssueCongot troller(BaseController):
+class IssueController(BaseController):
     def __init__(self, ghc):
         self.statistics = {}
         self.ghc = ghc
@@ -112,7 +112,7 @@ class IssueCongot troller(BaseController):
                 logging.error('[%d][#%d][%s -> %s] Unable to copy', idx, issue.number, fromrepo, actl_to_repo)
             else:
                 logging.info('[%d][#%d][%s -> %s] Copied successfully', idx, issue.number, fromrepo, actl_to_repo)
-            time.sleep(3)
+            time.sleep(5)
 
         with open('private/statistics.csv', "w",  newline='') as stats_file:
             w = csv.writer(stats_file)
