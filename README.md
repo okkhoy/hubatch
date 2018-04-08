@@ -48,6 +48,20 @@ Use the following command on a `bash` shell to get the integer ID:
 
 This returns a JSON string from which you can retrieve the team ID.
 
+### Continuing script for `copy`
+
+Look for the log message of the form: `ERROR:root:[306][#1055][<from repo> -> <to repo>] Unable to copy`
+The first number in the bracket is the index (here 306).
+You can restart the script to run from 306 using the `-s <idx number>` option.
+**However, beware, the next run index starts from 0, so if the script fails again, you need to add the previous failed indices to start at the right position.  If not you end up creating duplicate issues!**
+
+
+### Github Abuse Detection
+
+You cannot run the script start to end at once, as Github blocks the user account creating the issues owing to abuse detection mecanism kicking in.
+Based on our observation, we can post ~300 issues in one run.
+Hence, you may want to batch-fy your processing!
+
 ## Legal Notice
 
 GitHub is a trademark of GitHub Inc. All other trademarks and servicemarks are the property of their respective owners/holders.
