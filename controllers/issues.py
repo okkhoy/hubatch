@@ -104,6 +104,8 @@ class IssueController(BaseController):
 
             if not is_transferred:
                 logging.error('[%d][#%d][%s -> %s] Unable to copy', idx, issue.number, fromrepo, actl_to_repo)
+            else:
+                logging.info('[%d][#%d][%s -> %s] Copied successfully', idx, issue.number, fromrepo, actl_to_repo)
 
     def blast_issues(self, csv_file, title, msg_file, start_from):
         """
