@@ -117,7 +117,7 @@ class IssueController(BaseController):
                 logging.error('[%d][#%d][%s -> %s] Unable to copy', idx, issue.number, fromrepo, actl_to_repo)
             else:
                 logging.info('[%d][#%d][%s -> %s] Copied successfully', idx, issue.number, fromrepo, actl_to_repo)
-            time.sleep(5)
+            time.sleep(3)
 
         with open('private/statistics.csv', "w",  newline='') as stats_file:
             w = csv.writer(stats_file)
