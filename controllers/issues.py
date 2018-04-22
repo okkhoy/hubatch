@@ -159,3 +159,14 @@ class IssueController(BaseController):
 
         if len(failed_users) > 0:
             logging.warn('Unable to create issue for users: %s', failed_users)
+
+
+
+
+def get_team_and_tutorial():
+    import json
+
+    org_team = json.load(open("./private/org_team.json"))
+    org_tutorial = json.load(open("./private/org_tutorial.json"))
+
+    return org_team, org_tutorial
