@@ -100,6 +100,8 @@ class IssueController(BaseController):
             except IndexError:
                 actl_to_repo = torepo.format('')
 
+            org_team, org_tutorial = get_team_and_tutorial()
+
             if not to_mapping[1] in self.statistics:
                 internal_data = {"team": [to_mapping[0]], "count": 1}
                 self.statistics.update({to_mapping[1]: internal_data})
